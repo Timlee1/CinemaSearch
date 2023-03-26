@@ -12,11 +12,11 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 # Don't worry about the deployment credentials, those are fixed
 # You can use a different DB name if you want to
 MYSQL_USER = "root"
-MYSQL_USER_PASSWORD = "MayankRao16Cornell.edu"
+# MYSQL_USER_PASSWORD = "MayankRao16Cornell.edu"
 MYSQL_PORT = 3306
-MYSQL_DATABASE = "badmoviesdb"
+MYSQL_DATABASE = "kardashiandb"
 # MYSQL_USER = "root"
-# MYSQL_USER_PASSWORD = "CinemaSearch"
+MYSQL_USER_PASSWORD = "CinemaSearch"
 # MYSQL_PORT = 3306
 # MYSQL_DATABASE = "badmoviesdb"
 
@@ -32,8 +32,8 @@ CORS(app)
 # but if you decide to use SQLAlchemy ORM framework, 
 # there's a much better and cleaner way to do this
 def sql_search(movie):
-    query_sql = f"""SELECT imdb_rating,title,genres FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
-    keys = ["imdb_rating","title","genres"]
+    query_sql = f"""SELECT id,title,descr FROM episodes WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
+    keys = ["id","title","descr"]
     data = mysql_engine.query_selector(query_sql)
     return json.dumps([dict(zip(keys,i)) for i in data])
 

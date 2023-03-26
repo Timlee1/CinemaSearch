@@ -46,7 +46,8 @@
             .then((response) => response.json())
             .then((data) => data.forEach(row => {
                 let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating,row.title,row.genres)
+                // tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating,row.title,row.genres)
+                tempDiv.innerHTML = answerBoxTemplate(row.id,row.title,row.descr)
                 document.getElementById("answer-box").appendChild(tempDiv)
             }));
 
