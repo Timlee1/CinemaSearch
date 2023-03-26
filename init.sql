@@ -19,10 +19,11 @@ CREATE TABLE movies(
     release_date TEXT,
     directors TEXT
 );
-LOAD DATA LOCAL INFILE 'best_bad_movies.csv' 
-INTO TABLE movies 
-FIELDS TERMINATED BY ',' 
-ENCLOSED BY '"'
-LINES TERMINATED BY '\n'
+
+-- LOAD DATA LOCAL INFILE 'best_bad_movies.csv' 
+-- INTO TABLE movies 
+-- FIELDS TERMINATED BY ',' 
+-- ENCLOSED BY '"'
+-- LINES TERMINATED BY '\n'
 
 
