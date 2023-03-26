@@ -18,7 +18,10 @@
 --
 -- Table structure for table `movies`
 --
+SET GLOBAL local_infile=1;
 
+CREATE DATABASE IF NOT EXISTS `badmoviesdb`;
+USE `badmoviesdb`;
 DROP TABLE IF EXISTS `movies`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
