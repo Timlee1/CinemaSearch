@@ -31,10 +31,27 @@ CORS(app)
 # but if you decide to use SQLAlchemy ORM framework, 
 # there's a much better and cleaner way to do this
 def sql_search(movie):
-    query_sql = f"""SELECT imdb_rating,title,description FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
-    keys = ["imdb_rating","title","description"]
+    # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
+    query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies limit 10"""
+    keys = ["imdb_rating","title","description","directors"]
     data = mysql_engine.query_selector(query_sql)
-    return json.dumps([dict(zip(keys,i)) for i in data])
+    dump = json.dumps([dict(zip(keys,i)) for i in data])
+
+    # List of Dictionary of the movies retrieved. 
+    movies = json.loads(dump)
+    return dump
+
+# TODO Implement Jaccard Similarity
+def jac_sim(input,movies):
+    raise NotImplementedError
+
+# TODO Implement Jaccard Similarity
+def cos_sim(input,movies):
+    raise NotImplementedError
+
+# TODO Implement Jaccard Similarity
+def edit_dist(input,movies):
+    raise NotImplementedError
 
 @app.route("/")
 def home():
