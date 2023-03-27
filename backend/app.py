@@ -42,7 +42,8 @@ CORS(app)
 # terms is a tokenized list of strings representing key terms
 # genres is a tokenized list of selected genres
 # bounds is a double pair representing the bounds of the IMDB score range
-def sql_search(input, genres, bounds):
+# filter is a string representing extra SQL queries
+def sql_search(input, genres, bounds, filter):
     #print(input)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
     tokens = tokenize(input)
@@ -58,7 +59,7 @@ def sql_search(input, genres, bounds):
     key_terms = set(key_terms) #only count each term once in query
 
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
-    query_sql = f"""SELECT id,imdb_rating,title,description,directors,genres FROM movies"""
+    query_sql = f"""SELECT id,imdb_rating,title,description,directors,genres FROM movies {filter.lower()}"""
     keys = ["id","imdb_rating","title","description","directors", "genres"]
     data = mysql_engine.query_selector(query_sql)
     dump = json.dumps([dict(zip(keys,i)) for i in data])
@@ -85,7 +86,9 @@ def sql_search(input, genres, bounds):
     rankings = sorted(rankings, key=lambda x: x[1], reverse=True)
     #print([i[1] for i in rankings][:10])
     
-    return [i[0] for i in rankings][:10]
+    rankings = [i[0] for i in rankings][:10]
+
+    return rankings
     
 
     #j_rankings = sorted(j_sim, key=lambda x: x[1], reverse=True)
@@ -275,7 +278,17 @@ def home():
 @app.route("/episodes")
 def episodes_search():
     text = request.args.get("title")
-    return sql_search(text, "", "")
+    return sql_search(text, "", "", "")
+@app.route("/episodes/sort")
+def episodes_sort():
+    text = request.args.get("title")
+    sort_type = request.args.get("sort")
+    data = sql_search(text, "", "", "ORDER BY imdb_rating DESC")
+    if(sort_type == 'asc'):
+        data = sorted(data, key=lambda x: x['imdb_rating'], reverse=True)
+    else:
+        data = sorted(data, key=lambda x: x['imdb_rating'], reverse=False)
+    return data
 
 # app.run(debug=True)
 #print(tokenize_movies(sql_search("help")))
