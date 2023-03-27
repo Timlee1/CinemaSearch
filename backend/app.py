@@ -76,11 +76,15 @@ def sql_search(input, genres, bounds):
         if input == pair[0]["title"].lower():
             rankings.append((pair[0], 100))
         # look up cosine simularity for same movie and combine simualrity measures, equal weight
+        #don't include zero simularity
         else:
-            rankings.append((pair[0], c_sim[id] + pair[1]))
+            if c_sim[id] + pair[1] > 0:
+                rankings.append((pair[0], c_sim[id] + pair[1]))
     
+
     rankings = sorted(rankings, key=lambda x: x[1], reverse=True)
     #print([i[1] for i in rankings][:10])
+    
     return [i[0] for i in rankings][:10]
     
 
