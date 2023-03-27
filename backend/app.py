@@ -68,27 +68,30 @@ def sql_search(input, genres, bounds):
     movies = tokenize_movies(movies)
 
     j_sim = jac_sim(genres_lst, movies)
-<<<<<<< HEAD
     c_sim = cos_sim(key_terms, movies)
     rankings = list()
     for pair in j_sim:
         id = pair[0]["id"]
+        #infinite weight if name matches perfectly
+        if input == pair[0]["title"].lower():
+            rankings.append((pair[0], 100))
         # look up cosine simularity for same movie and combine simualrity measures, equal weight
-        rankings.append((pair[0], c_sim[id] + pair[1]))
+        else:
+            rankings.append((pair[0], c_sim[id] + pair[1]))
     
     rankings = sorted(rankings, key=lambda x: x[1], reverse=True)
     #print([i[1] for i in rankings][:10])
     return [i[0] for i in rankings][:10]
     
-=======
-    j_rankings = sorted(j_sim, key=lambda x: x[1], reverse=True)
 
-    ed_dist = edit_dist(input,movies)    
-    ed_dist_rankings = sorted(ed_dist, key=lambda x: x[1], reverse=False)
+    #j_rankings = sorted(j_sim, key=lambda x: x[1], reverse=True)
+
+    #ed_dist = edit_dist(input,movies)    
+    #ed_dist_rankings = sorted(ed_dist, key=lambda x: x[1], reverse=False)
 
     #print([i[1] for i in rankings])
-    return [i[0] for i in j_rankings]
->>>>>>> 2a0170ede23968739a0441eba460eb1f8cfe3966
+    #return [i[0] for i in j_rankings]
+
 
 
 # Tokenize some string
@@ -181,7 +184,6 @@ def jac_sim(input,movies):
 #
 # @returns a list of pairs with each movie paired with its cosine sim with query
 def cos_sim(input,movies):
-<<<<<<< HEAD
    #load stored data
    term_postings = json.load(open("term_postings.json", 'r'))
    norms = json.load(open("doc_norms.json", 'r'))
@@ -216,9 +218,7 @@ def cos_sim(input,movies):
    
            
        
-# TODO Implement Jaccard Similarity
-=======
-   raise NotImplementedError
+
 
 # TODO Implement Edit Distance
 # Performs edit distance from input to movie name
@@ -226,7 +226,6 @@ def cos_sim(input,movies):
 # @param movies: list of dictionaries for the the movies 
 #
 # @returns a list of pairs with each movie paired with its edit distance with query
->>>>>>> 2a0170ede23968739a0441eba460eb1f8cfe3966
 def edit_dist(input,movies):
     del_cost = 1
     ins_cost = 1
