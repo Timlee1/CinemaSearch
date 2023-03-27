@@ -3,7 +3,9 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
+    rel="stylesheet">
+
 <body>
     <div class="full-body-container">
         <div class="top-text">
@@ -17,8 +19,33 @@
             </div>
             <div class="input-box" onclick="sendFocus()">
                 <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Search for a Keeping up with the Kardashians episode" id="filter-text-val" onkeyup="filterText()">
+                <input placeholder="Input Genres or Key Terms!" id="filter-text-val" onkeyup="filterText()">
             </div>
+            <!--
+            <form action="#">
+                <label for="genres">Genres:</label>
+                <select name="genres" id="genres" multiple>
+                    <option value="horror">Horror</option>
+                    <option value="action">Action</option>
+                    <option value="mystery">Mystery</option>
+                    <option value="romance">Romance</option>
+                    <option value="sci-fi">Sci-fi</option>
+                    <option value="western">Western</option>
+                    <option value="drama">Drama</option>
+                    <option value="sci-fi">Sci-fi</option>
+                    <option value="comedy">Comedy</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="crime">Crime</option>
+                    <option value="thriller">Thriller</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="sport">Sport</option>
+                    <option value="biography">Biography</option>
+                    <option value="musical">Musical</option>
+                    <option value="documentary">Documentary</option>
+                </select>
+                <input type="submit" value="Submit" />
+            </form>-->
+
         </div>
         <div id="answer-box">
 
@@ -27,30 +54,30 @@
 
     <script>
 
-        function answerBoxTemplate(rating,title,descr){
+        function answerBoxTemplate(rating, title, descr, genres) {
             return `<div class=''>
-                <h3 class='episode-title'>${title} : Rating: ${rating}</h3>
+                <h3 class='episode-title'>${title} : Rating: ${rating} <br/> Genres: ${genres}</h3>
                 <p class='episode-desc'> ${descr}</p>
                 
             </div>`
         }
 
-        function sendFocus(){
+        function sendFocus() {
             document.getElementById('filter-text-val').focus()
         }
 
-        function filterText(){
+        function filterText() {
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
-            .then((response) => response.json())
-            .then((data) => data.forEach(row => {
-                let tempDiv = document.createElement("div")
-                tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating,row.title,row.description)
-                document.getElementById("answer-box").appendChild(tempDiv)
-            }));
+                .then((response) => response.json())
+                .then((data) => data.forEach(row => {
+                    let tempDiv = document.createElement("div")
+                    tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row.genres)
+                    document.getElementById("answer-box").appendChild(tempDiv)
+                }));
 
         }
-            
+
     </script>
 </body>
