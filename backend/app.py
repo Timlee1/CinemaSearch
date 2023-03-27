@@ -23,7 +23,7 @@ MYSQL_USER_PASSWORD = "CinemaSearch"
 mysql_engine = MySQLDatabaseHandler(MYSQL_USER,MYSQL_USER_PASSWORD,MYSQL_PORT,MYSQL_DATABASE)
 
 # Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
-mysql_engine.load_file_into_db()
+#mysql_engine.load_file_into_db()
 
 app = Flask(__name__)
 CORS(app)
@@ -38,7 +38,7 @@ CORS(app)
 # genres is a tokenized list of selected genres
 # bounds is a double pair representing the bounds of the IMDB score range
 def sql_search(input, genres, bounds):
-
+    #print(input)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
     tokens = tokenize(input)
     genres_lst = list()
@@ -61,9 +61,13 @@ def sql_search(input, genres, bounds):
     movies = tokenize_movies(movies)
 
     j_sim = jac_sim(genres_lst, movies)
-    rankings = sorted(j_sim, key=lambda x: x[1], reverse=True)
+    j_rankings = sorted(j_sim, key=lambda x: x[1], reverse=True)
+
+    ed_dist = edit_dist(input,movies)    
+    ed_dist_rankings = sorted(ed_dist, key=lambda x: x[1], reverse=False)
+
     #print([i[1] for i in rankings])
-    return [i[0] for i in rankings]
+    return [i[0] for i in j_rankings]
 
 
 # Tokenize some string
@@ -116,10 +120,48 @@ def jac_sim(input,movies):
 def cos_sim(input,movies):
    raise NotImplementedError
 
-# TODO Implement Jaccard Similarity
+# TODO Implement Edit Distance
+# Performs edit distance from input to movie name
+# @param input: query that the user types into the search bar 
+# @param movies: list of dictionaries for the the movies 
+#
+# @returns a list of pairs with each movie paired with its edit distance with query
 def edit_dist(input,movies):
-    raise NotImplementedError
+    del_cost = 1
+    ins_cost = 1
+    sub_cost = 2
+    res = []
+    input = input.lower()
+    for movie in movies:
+        title = movie['title'].lower()
+        #print(title, input)
+        dist = edit_distance(input,title, del_cost, ins_cost, sub_cost)
+        #print(dist)
+        res.append((movie,dist))
+    #print(res)
+    return res
 
+def edit_distance(input, title, del_cost, ins_cost, sub_cost):
+    m = len(input) + 1
+    n = len(title) + 1
+
+    chart = {(0, 0): 0}
+    for i in range(1, m): 
+        chart[i,0] = chart[i-1, 0] + del_cost 
+    for j in range(1, n): 
+        chart[0,j] = chart[0, j-1] + ins_cost
+    for i in range(1, m):
+        for j in range(1, n):
+            if input[i-1] == title[j-1]:
+                sub_cost_val = 0
+            else:
+                sub_cost_val = sub_cost
+            chart[i, j] = min(
+                chart[i-1, j] + del_cost,
+                chart[i, j-1] + ins_cost,
+                chart[i-1, j-1] + sub_cost_val
+            )
+    return chart[(len(input),len(title))]
 
 
 @app.route("/")
