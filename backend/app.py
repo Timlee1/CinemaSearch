@@ -47,7 +47,7 @@ def sql_search(input, genres, bounds, filter):
     #print(input)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
     tokens = tokenize(input)
-    genres_lst = list()
+    genres_lst = genres
     key_terms = list() # dictonary to track term freqs
 
     for token in tokens:
@@ -55,7 +55,7 @@ def sql_search(input, genres, bounds, filter):
             genres_lst.append(token)
         else:
             key_terms.append(token)
-    
+    print(genres_lst)
     key_terms = set(key_terms) #only count each term once in query
 
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
@@ -278,13 +278,16 @@ def home():
 @app.route("/episodes")
 def episodes_search():
     text = request.args.get("title")
-    return sql_search(text, "", "", "")
+    genres = request.args.get("genres").split(",")
+    print("TEST: ",type(genres))
+    print("genres: ",genres)
+    return sql_search(text, genres, "", "")
 @app.route("/episodes/sort")
 def episodes_sort():
     text = request.args.get("title")
     sort_type = request.args.get("sort")
     data = sql_search(text, "", "", "ORDER BY imdb_rating DESC")
-    if(sort_type ==f 'asc'):
+    if(sort_type == 'asc'):
         data = sorted(data, key=lambda x: x['imdb_rating'], reverse=True)
     else:
         data = sorted(data, key=lambda x: x['imdb_rating'], reverse=False)

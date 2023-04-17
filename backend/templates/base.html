@@ -11,7 +11,7 @@
         <div class="top-text">
             <div class="google-colors">
                 <h1 id="google-c">Bottom of the Bin</h1>
-                <img class = "logo" src="{{ url_for('static', filename='images/trash.png') }}" />
+                <img class="logo" src="{{ url_for('static', filename='images/trash.png') }}" />
             </div>
             <div class="input-box" onclick="sendFocus()">
                 <img src="{{ url_for('static', filename='images/mag.png') }}" />
@@ -19,17 +19,16 @@
             </div>
             <div class="sort">
                 <p>Sort By:</p>
-                <button class = "sort-button" onclick="sortResults('asc')"> 
+                <button class="sort-button" onclick="sortResults('asc')">
                     &#9650;
                 </button>
-                <button class = "sort-button" onclick="sortResults('desc')"> 
+                <button class="sort-button" onclick="sortResults('desc')">
                     &#9660;
                 </button>
             </div>
-            <!--
-            <form action="#">
+
                 <label for="genres">Genres:</label>
-                <select name="genres" id="genres" multiple>
+                <select name="genres" id="genres" class = "genres" multiple>
                     <option value="horror">Horror</option>
                     <option value="action">Action</option>
                     <option value="mystery">Mystery</option>
@@ -48,8 +47,6 @@
                     <option value="musical">Musical</option>
                     <option value="documentary">Documentary</option>
                 </select>
-                <input type="submit" value="Submit" />
-            </form>-->
 
         </div>
         <div id="answer-box">
@@ -58,6 +55,29 @@
     </div>
 
     <script>
+        var genres_selected = new Array();
+
+
+        genres.addEventListener("change", function () {
+            var genres = document.getElementById("genres");
+            genres_selected = getSelectValues(genres);
+            filterText();
+        });
+
+        function getSelectValues(select) {
+            var result = [];
+            var options = select && select.options;
+            var opt;
+
+            for (var i = 0, iLen = options.length; i < iLen; i++) {
+                opt = options[i];
+
+                if (opt.selected) {
+                    result.push(opt.value || opt.text);
+                }
+            }
+            return result;
+        }
 
         function answerBoxTemplate(rating, title, descr, genres) {
             return `<div class=''>
@@ -74,27 +94,33 @@
         function filterText() {
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
-            fetch("/episodes?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value }).toString())
+            fetch("/episodes?" + new URLSearchParams({
+                    title: document.getElementById("filter-text-val").value,
+                    genres: genres_selected
+                }).toString())
                 .then((response) => response.json())
                 .then((data) => data.forEach(row => {
                     let tempDiv = document.createElement("div")
-                    tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row.genres)
+                    tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
+                        .genres)
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
         }
+
         function sortResults(sort_type) {
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
-            fetch("/episodes/sort?" + new URLSearchParams({ title: document.getElementById("filter-text-val").value, sort: (sort_type) }).toString())
+            fetch("/episodes/sort?" + new URLSearchParams({
+                    title: document.getElementById("filter-text-val").value,
+                    sort: genres_selected
+                }).toString())
                 .then((response) => response.json())
                 .then((data) => data.forEach(row => {
                     let tempDiv = document.createElement("div")
-                    tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row.genres)
+                    tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
+                        .genres)
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
         }
-
-
-
     </script>
 </body>

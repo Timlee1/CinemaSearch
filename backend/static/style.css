@@ -99,6 +99,12 @@
     margin-top: 50px;
 }
 
+.genres {
+    width: 200px;
+    height: 80px;
+}
+
+
 .episode-title {
     font-family: 'Kanit', sans-serif;
 }
