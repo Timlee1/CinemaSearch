@@ -46,6 +46,7 @@ CORS(app)
 # filter is a string representing extra SQL queries
 def sql_search(input, genres, bounds, filter):
     #print(input)
+    #print(genres)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
     tokens = tokenize(input)
     genres_lst = genres
@@ -57,9 +58,17 @@ def sql_search(input, genres, bounds, filter):
         else:
             key_terms.append(token)
     key_terms = set(key_terms) #only count each term once in query
+    genres_filter_query = genre_filter(genres_lst)
+    #print(genres_filter_query)
 
-    # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
-    query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+
+    # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{input.lower()}%%' limit 10""")
+    where_statement = genres_filter_query 
+    if len(where_statement) > 0:
+        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
+        #print(query_sql)
+    else:
+        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
     keys = ["id","imdb_rating","title","description","images", "genres"]
     data = mysql_engine.query_selector(query_sql)
     dump = json.dumps([dict(zip(keys,i)) for i in data])
@@ -99,7 +108,19 @@ def sql_search(input, genres, bounds, filter):
     #print([i[1] for i in rankings])
     #return [i[0] for i in j_rankings]
 
-
+# Convert list of genres to string usable for query
+#
+# @param genres list of genres 
+#
+# @returns string needed for query WHERE statement so that it only contains movies
+# with those genres     
+def genre_filter(genres):
+    output = ""
+    for i in range(len(genres)):
+        output = output + "LOWER( genres ) LIKE " +"'%%"+str(genres[i]).lower()+"%%'"
+        if i != len(genres)- 1:
+            output += " AND "
+    return output   
 
 # Tokenize some string
 #
