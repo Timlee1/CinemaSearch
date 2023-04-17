@@ -19,6 +19,7 @@ os.environ['ROOT_PATH'] = os.path.abspath(os.path.join("..",os.curdir))
 # MYSQL_USER_PASSWORD = "MayankRao16Cornell.edu"
 MYSQL_USER = "root"
 MYSQL_PORT = 3306
+# MYSQL_PORT = 4999
 MYSQL_DATABASE = "badmoviesdb"
 # Change to your password. Default: CinemaSearch
 MYSQL_USER_PASSWORD = "CinemaSearch"
@@ -26,7 +27,7 @@ MYSQL_USER_PASSWORD = "CinemaSearch"
 mysql_engine = MySQLDatabaseHandler(MYSQL_USER,MYSQL_USER_PASSWORD,MYSQL_PORT,MYSQL_DATABASE)
 
 # Path to init.sql file. This file can be replaced with your own file for testing on localhost, but do NOT move the init.sql file
-#mysql_engine.load_file_into_db()
+mysql_engine.load_file_into_db()
 
 app = Flask(__name__)
 CORS(app)
@@ -55,12 +56,11 @@ def sql_search(input, genres, bounds, filter):
             genres_lst.append(token)
         else:
             key_terms.append(token)
-    print(genres_lst)
     key_terms = set(key_terms) #only count each term once in query
 
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{movie.lower()}%%' limit 10"""
-    query_sql = f"""SELECT id,imdb_rating,title,description,directors,genres FROM movies {filter.lower()}"""
-    keys = ["id","imdb_rating","title","description","directors", "genres"]
+    query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+    keys = ["id","imdb_rating","title","description","images", "genres"]
     data = mysql_engine.query_selector(query_sql)
     dump = json.dumps([dict(zip(keys,i)) for i in data])
 
@@ -279,8 +279,6 @@ def home():
 def episodes_search():
     text = request.args.get("title")
     genres = request.args.get("genres").split(",")
-    print("TEST: ",type(genres))
-    print("genres: ",genres)
     return sql_search(text, genres, "", "")
 @app.route("/episodes/sort")
 def episodes_sort():

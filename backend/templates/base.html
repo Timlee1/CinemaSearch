@@ -56,8 +56,6 @@
 
     <script>
         var genres_selected = new Array();
-
-
         genres.addEventListener("change", function () {
             var genres = document.getElementById("genres");
             genres_selected = getSelectValues(genres);
@@ -79,12 +77,17 @@
             return result;
         }
 
-        function answerBoxTemplate(rating, title, descr, genres) {
-            return `<div class=''>
+        function answerBoxTemplate(rating, title, descr, genres,img_url) {
+            return `
+        <div class = 'box'>
+            <div class='image'>
+                <img src='${img_url}' alt='${title}' />
+            </div>
+            <div class='info'>
                 <h3 class='episode-title'>${title} : Rating: ${rating} <br/> Genres: ${genres}</h3>
                 <p class='episode-desc'> ${descr}</p>
-                
-            </div>`
+            </div> 
+        </div>`
         }
 
         function sendFocus() {
@@ -102,7 +105,7 @@
                 .then((data) => data.forEach(row => {
                     let tempDiv = document.createElement("div")
                     tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
-                        .genres)
+                        .genres,row.images)
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
         }
@@ -112,13 +115,13 @@
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes/sort?" + new URLSearchParams({
                     title: document.getElementById("filter-text-val").value,
-                    sort: genres_selected
+                    sort: sort_type
                 }).toString())
                 .then((response) => response.json())
                 .then((data) => data.forEach(row => {
                     let tempDiv = document.createElement("div")
                     tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
-                        .genres)
+                        .genres,row.images)
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
         }

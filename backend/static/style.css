@@ -104,6 +104,20 @@
     height: 80px;
 }
 
+.box {
+    display: flex;
+    flex-direction: row;
+}
+
+.image {
+    width: 200px;
+    margin-right: 15px;
+}
+
+img {
+    width: auto;
+    height: 200px;
+}
 
 .episode-title {
     font-family: 'Kanit', sans-serif;
