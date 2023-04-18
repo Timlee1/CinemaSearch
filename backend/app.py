@@ -2,9 +2,13 @@ import json
 import os
 import re
 import math
+import numpy as np
 from flask import Flask, render_template, request
 from flask_cors import CORS
 from helpers.MySQLDatabaseHandler import MySQLDatabaseHandler
+from sklearn.feature_extraction.text import TfidfVectorizer
+from scipy.sparse.linalg import svds
+from sklearn.preprocessing import normalize
 #from nltk.stem import PorterStemmer
 
 
@@ -75,10 +79,15 @@ def sql_search(input, genres, bounds, filter):
 
     # List of Dictionary of the movies retrieved. 
     movies = json.loads(dump)
+    
+    svd_sim = SVD_sim(input, movies)
+
     movies = tokenize_movies(movies)
+    #term_postings(movies)
 
     j_sim = jac_sim(genres_lst, movies)
     c_sim = cos_sim(key_terms, movies)
+    
     rankings = list()
     for pair in j_sim:
         id = pair[0]["id"]
@@ -88,15 +97,14 @@ def sql_search(input, genres, bounds, filter):
         # look up cosine simularity for same movie and combine simualrity measures, equal weight
         #don't include zero simularity
         else:
-            if c_sim[id] + pair[1] > 0:
-                rankings.append((pair[0], c_sim[id] + pair[1]))
+            if svd_sim[id] + pair[1] > 0:
+                rankings.append((pair[0], svd_sim[id] + pair[1]))
     
 
     rankings = sorted(rankings, key=lambda x: x[1], reverse=True)
     #print([i[1] for i in rankings][:10])
     
     rankings = [i[0] for i in rankings][:10]
-
     return rankings
     
 
@@ -290,6 +298,31 @@ def edit_distance(input, title, del_cost, ins_cost, sub_cost):
                 chart[i-1, j-1] + sub_cost_val
             )
     return chart[(len(input),len(title))]
+
+# build similary between query and movies using SVD
+def SVD_sim(query, movies):
+    vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .85,
+                            min_df = 0)
+    # vectorize descriptions
+    td_matrix = vectorizer.fit_transform([x["description"] for x in movies])
+    #break down into matricies
+    docs_compressed, s, words_compressed = svds(td_matrix, k=50)
+    words_compressed = words_compressed.T
+    words_compressed_normed = normalize(words_compressed, axis = 1)
+
+    # apply query to word matrix
+    query_tfidf = vectorizer.transform([query]).toarray()
+    query_vec = (query_tfidf @ words_compressed_normed).T
+    
+    docs_compressed_normed = normalize(docs_compressed)
+    #print(query_tfidf)
+    sims = docs_compressed_normed.dot(query_vec)
+    sims = sims.flatten()
+    out = dict()
+    #map id's to sim
+    for i in range(len(movies)):
+        out[movies[i]["id"]] = sims[i]
+    return out
 
 
 @app.route("/")
