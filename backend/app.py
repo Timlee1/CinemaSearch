@@ -68,6 +68,7 @@ def sql_search(input, genres, bounds, filter):
 
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{input.lower()}%%' limit 10""")
     where_statement = genres_filter_query 
+    print(where_statement)
     if len(where_statement) > 0:
         query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
         #print(query_sql)
@@ -306,7 +307,9 @@ def SVD_sim(query, movies):
     # vectorize descriptions
     td_matrix = vectorizer.fit_transform([x["description"] for x in movies])
     #break down into matricies
-    docs_compressed, s, words_compressed = svds(td_matrix, k=50)
+    dim = min(50,min(td_matrix.shape) -1)
+
+    docs_compressed, s, words_compressed = svds(td_matrix, k = dim)
     words_compressed = words_compressed.T
     words_compressed_normed = normalize(words_compressed, axis = 1)
 
