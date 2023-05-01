@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import pickle
 import math
 import numpy as np
 from flask import Flask, render_template, request
@@ -70,8 +71,9 @@ def sql_search(input, genres, bounds, filter):
     where_statement = genres_filter_query 
     print(where_statement)
     if len(where_statement) > 0:
-        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
+        #query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
         #print(query_sql)
+        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
     else:
         query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
     keys = ["id","imdb_rating","title","description","images", "genres"]
@@ -80,8 +82,17 @@ def sql_search(input, genres, bounds, filter):
 
     # List of Dictionary of the movies retrieved. 
     movies = json.loads(dump)
+  
     
-    svd_sim = SVD_sim(input, movies)
+  
+    svd_sim = SVD_sim(input, movies, False)
+
+      # load likes, dislikes
+    likes_dict = json.load(open("movie_likes.json", 'r'))
+    for movie in movies:
+        pair = likes_dict[movie['title']]
+        movie["likes"] = pair[0]
+        movie["dislikes"] = pair[1]
 
     movies = tokenize_movies(movies)
     #term_postings(movies)
@@ -91,21 +102,21 @@ def sql_search(input, genres, bounds, filter):
     
     rankings = list()
     for pair in j_sim:
-        id = pair[0]["id"]
+        title = pair[0]["title"]
         #infinite weight if name matches perfectly
         if input == pair[0]["title"].lower():
             rankings.append((pair[0], 100))
         # look up cosine simularity for same movie and combine simualrity measures, equal weight
         #don't include zero simularity
         else:
-            if svd_sim[id] + pair[1] > 0:
-                rankings.append((pair[0], svd_sim[id] + pair[1]))
+            if svd_sim[title] + pair[1] > 0:
+                rankings.append((pair[0], svd_sim[title] + pair[1]))
     
 
     rankings = sorted(rankings, key=lambda x: x[1], reverse=True)
-    #print([i[1] for i in rankings][:10])
-    
-    rankings = [i[0] for i in rankings][:10]
+        #print([i[1] for i in rankings][:10])
+    if len(rankings) > 10:
+        rankings = [i[0] for i in rankings][:10]
     return rankings
     
 
@@ -301,30 +312,54 @@ def edit_distance(input, title, del_cost, ins_cost, sub_cost):
     return chart[(len(input),len(title))]
 
 # build similary between query and movies using SVD
-def SVD_sim(query, movies):
-    vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .85,
+
+#if write, sets up vectorizer and zeros out likes
+def SVD_sim(query, movies, write=False):
+    
+    if(write):
+        like_dict = dict()
+        for movie in movies:
+            like_dict[movie['title']] = (0,0) #(likes, dislikes)
+        
+        json.dump(like_dict, open("movie_likes.json", 'w'))
+
+        vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .85,
                             min_df = 0)
-    # vectorize descriptions
-    td_matrix = vectorizer.fit_transform([x["description"] for x in movies])
-    #break down into matricies
-    dim = min(50,min(td_matrix.shape) -1)
+        # vectorize descriptions
+        td_matrix = vectorizer.fit_transform([x["description"] for x in movies])
+        loc = open('vectorizer.pickle', 'wb')
+        pickle.dump(vectorizer, loc)
+        loc.close()
+        
+        #break down into matricies
+        dim = min(50,min(td_matrix.shape) -1)
 
-    docs_compressed, s, words_compressed = svds(td_matrix, k = dim)
-    words_compressed = words_compressed.T
-    words_compressed_normed = normalize(words_compressed, axis = 1)
+        docs_compressed, s, words_compressed = svds(td_matrix, k = dim)
+        words_compressed = words_compressed.T
+        words_compressed_normed = normalize(words_compressed, axis = 1)
+        docs_compressed_normed = normalize(docs_compressed)
+        np.save("words_compressed_normed", words_compressed_normed)
+        np.save("docs_compressed_normed", docs_compressed_normed)
 
+
+
+    loc = open('vectorizer.pickle', 'rb')
+    vectorizer = pickle.load(loc)
+    loc.close()
     # apply query to word matrix
+    words_compressed_normed = np.load("words_compressed_normed.npy")
+    docs_compressed_normed = np.load("docs_compressed_normed.npy")
     query_tfidf = vectorizer.transform([query]).toarray()
     query_vec = (query_tfidf @ words_compressed_normed).T
     
-    docs_compressed_normed = normalize(docs_compressed)
+    
     #print(query_tfidf)
     sims = docs_compressed_normed.dot(query_vec)
     sims = sims.flatten()
     out = dict()
     #map id's to sim
     for i in range(len(movies)):
-        out[movies[i]["id"]] = sims[i]
+        out[movies[i]["title"]] = sims[i]
     return out
 
 
@@ -347,6 +382,25 @@ def episodes_sort():
     else:
         data = sorted(data, key=lambda x: x['imdb_rating'], reverse=False)
     return data
+
+@app.route("/episodes/like")
+def like_update():
+    title = request.args.get("title")
+    change = request.args.get("change")
+    movie_likes = json.load(open("movie_likes.json", 'r'))
+    if change == 'like':
+        movie_likes[title] = (movie_likes[title][0] + 1, movie_likes[title][1])
+    if change == 'relike':
+        movie_likes[title] = (movie_likes[title][0] + 1, movie_likes[title][1]-1)
+    if change == 'dislike':
+        movie_likes[title] = (movie_likes[title][0], movie_likes[title][1]+1)
+    if change == 'unlike':
+        movie_likes[title] = (movie_likes[title][0] -1, movie_likes[title][1]+1)
+    
+    json.dump(movie_likes, open("movie_likes.json", 'w'))
+
+    
+
 
 # app.run(debug=True)
 #print(tokenize_movies(sql_search("help")))
