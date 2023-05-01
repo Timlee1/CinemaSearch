@@ -50,7 +50,6 @@ CORS(app)
 # bounds is a double pair representing the bounds of the IMDB score range
 # filter is a string representing extra SQL queries
 def sql_search(input, genres, bounds, filter):
-    return list()
     #print(input)
     #print(genres)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
