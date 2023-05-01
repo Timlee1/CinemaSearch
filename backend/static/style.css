@@ -126,3 +126,36 @@ img {
 .episode-desc {
     font-family: 'Montserrat', sans-serif;
 }
+
+body {
+    margin: 40px;
+}
+
+button {
+    cursor: pointer;
+    outline: 0;
+    color: #AAA;
+
+}
+
+.btn:focus {
+    outline: none;
+}
+
+.thumbs-up {
+    color: green;
+    margin: 40px;
+}
+
+.thumbs-down {
+    color: red;
+    margin: 40px;
+}
+
+.green {
+    color: green;
+}
+
+.red {
+    color: red;
+}

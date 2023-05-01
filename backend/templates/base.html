@@ -5,6 +5,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kanit&family=Montserrat&family=Open+Sans:wght@500&display=swap"
     rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <body>
     <div class="full-body-container">
@@ -27,26 +28,26 @@
                 </button>
             </div>
 
-                <label for="genres">Genres:</label>
-                <select name="genres" id="genres" class = "genres" multiple>
-                    <option value="horror">Horror</option>
-                    <option value="action">Action</option>
-                    <option value="mystery">Mystery</option>
-                    <option value="romance">Romance</option>
-                    <option value="sci-fi">Sci-fi</option>
-                    <option value="western">Western</option>
-                    <option value="drama">Drama</option>
-                    <option value="sci-fi">Sci-fi</option>
-                    <option value="comedy">Comedy</option>
-                    <option value="fantasy">Fantasy</option>
-                    <option value="crime">Crime</option>
-                    <option value="thriller">Thriller</option>
-                    <option value="adventure">Adventure</option>
-                    <option value="sport">Sport</option>
-                    <option value="biography">Biography</option>
-                    <option value="musical">Musical</option>
-                    <option value="documentary">Documentary</option>
-                </select>
+            <label for="genres">Genres:</label>
+            <select name="genres" id="genres" class="genres" multiple>
+                <option value="horror">Horror</option>
+                <option value="action">Action</option>
+                <option value="mystery">Mystery</option>
+                <option value="romance">Romance</option>
+                <option value="sci-fi">Sci-fi</option>
+                <option value="western">Western</option>
+                <option value="drama">Drama</option>
+                <option value="sci-fi">Sci-fi</option>
+                <option value="comedy">Comedy</option>
+                <option value="fantasy">Fantasy</option>
+                <option value="crime">Crime</option>
+                <option value="thriller">Thriller</option>
+                <option value="adventure">Adventure</option>
+                <option value="sport">Sport</option>
+                <option value="biography">Biography</option>
+                <option value="musical">Musical</option>
+                <option value="documentary">Documentary</option>
+            </select>
 
         </div>
         <div id="answer-box">
@@ -55,12 +56,16 @@
     </div>
 
     <script>
+
+
         var genres_selected = new Array();
         genres.addEventListener("change", function () {
             var genres = document.getElementById("genres");
             genres_selected = getSelectValues(genres);
             filterText();
         });
+
+        function myFunction(x) { x.classList.toggle("fa-thumbs-down"); }
 
         function getSelectValues(select) {
             var result = [];
@@ -77,16 +82,20 @@
             return result;
         }
 
-        function answerBoxTemplate(rating, title, descr, genres,img_url) {
+        function answerBoxTemplate(rating, title, descr, genres, img_url, likes, dislikes) {
             return `
         <div class = 'box'>
             <div class='image'>
                 <img src='${img_url}' alt='${title}' />
             </div>
             <div class='info'>
-                <h3 class='episode-title'>${title} : Rating: ${rating} <br/> Genres: ${genres}</h3>
+                <h3 class='episode-title'>${title} : Rating: ${rating} <br/> Likes: ${likes} Dislikes: ${dislikes} <br/> Genres: ${genres}</h3>
                 <p class='episode-desc'> ${descr}</p>
             </div> 
+            <button class="btn" id="thumbs-up"><i class="fa fa-thumbs-up fa-lg" aria-hidden="true"></i>
+                </button>
+            <button class="btn" id="thumbs-down"><i class="fa fa-thumbs-down fa-lg" aria-hidden="true"></i>
+            </button>
         </div>`
         }
 
@@ -98,30 +107,69 @@
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes?" + new URLSearchParams({
-                    title: document.getElementById("filter-text-val").value,
-                    genres: genres_selected
-                }).toString())
+                title: document.getElementById("filter-text-val").value,
+                genres: genres_selected
+            }).toString())
                 .then((response) => response.json())
-                .then((data) => data.forEach(row => {
-                    let tempDiv = document.createElement("div")
-                    tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
-                        .genres,row.images)
-                    document.getElementById("answer-box").appendChild(tempDiv)
-                }));
+                .then((data) =>
+                    data.forEach(row => {
+                        let tempDiv = document.createElement("div")
+                        tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
+                            .genres, row.images, row.likes, row.dislikes)
+
+                        var btn1 = tempDiv.querySelector('div.box button[id=thumbs-up]');
+                        var btn2 = tempDiv.querySelector('div.box button[id=thumbs-down]');
+
+                        btn1.addEventListener('click', function () {
+                            let change = 0
+                            if (btn2.classList.contains('red')) {
+                                btn2.classList.remove('red');
+                                change = "relike"
+                            }
+                            else {
+                                change = "like"
+                            }
+
+                            this.classList.toggle('green');
+                            fetch("/episodes/like?" + new URLSearchParams({
+                                title: row.title,
+                                change: change
+                            }).toString());
+                        });
+                        btn2.addEventListener('click', function () {
+
+                            if (btn1.classList.contains('green')) {
+                                btn1.classList.remove('green');
+                                change = "unlike"
+                            }
+                            else {
+                                change = "dislike"
+                            }
+                            this.classList.toggle('red');
+
+                            fetch("/episodes/like?" + new URLSearchParams({
+                                title: row.title,
+                                change: change
+                            }).toString());
+
+                        });
+                        document.getElementById("answer-box").appendChild(tempDiv)
+                    }));
         }
 
         function sortResults(sort_type) {
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes/sort?" + new URLSearchParams({
-                    title: document.getElementById("filter-text-val").value,
-                    sort: sort_type
-                }).toString())
+                title: document.getElementById("filter-text-val").value,
+                sort: sort_type
+            }).toString())
                 .then((response) => response.json())
                 .then((data) => data.forEach(row => {
                     let tempDiv = document.createElement("div")
                     tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
-                        .genres,row.images)
+                        .genres, row.images)
+                    document.getElementById("div")
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
         }
