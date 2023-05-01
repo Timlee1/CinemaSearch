@@ -46,6 +46,7 @@
 .logo {
     padding-top: 50px;
     width: 100px;
+    height: 200px;
 }
 
 .sort-button {
@@ -107,16 +108,38 @@
 .box {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    padding: 10px 10px;
+    margin: 2px 2px;
+    border-radius: 2px;
+    border-color: black;
+    border-style: solid;
 }
 
 .image {
     width: 200px;
     margin-right: 15px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
 }
 
-img {
-    width: auto;
+.col {
+    display: flex;
+    flex-direction: column;
+}
+
+.trash {
     height: 200px;
+    width: auto;
+}
+
+.movie-img {
+    height: 200px;
+    width: 160px;
+    object-fit: cover;
 }
 
 .episode-title {
@@ -142,6 +165,12 @@ button {
     outline: none;
 }
 
+.btn {
+    width: 50px;
+    height: 50px;
+    bottom: 0;
+}
+
 .thumbs-up {
     color: green;
     margin: 40px;
@@ -150,6 +179,19 @@ button {
 .thumbs-down {
     color: red;
     margin: 40px;
+}
+
+.info {
+    width: 100%;
+}
+
+.social {
+    margin-left: -20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+
 }
 
 .green {

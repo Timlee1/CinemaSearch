@@ -85,17 +85,22 @@
         function answerBoxTemplate(rating, title, descr, genres, img_url, likes, dislikes) {
             return `
         <div class = 'box'>
+            <div class = 'col'>
             <div class='image'>
-                <img src='${img_url}' alt='${title}' />
+                <img class = 'movie-img' src='${img_url}' alt='${title}' />
+            </div>
+            <div class = 'social'>
+            <button class="btn" id="thumbs-up"><i class="fa fa-thumbs-up fa-lg" aria-hidden="true"></i>
+                </button>
+            <button class="btn" id="thumbs-down"><i class="fa fa-thumbs-down fa-lg" aria-hidden="true"></i>
+            </button>
+            </div>
             </div>
             <div class='info'>
                 <h3 class='episode-title'>${title} : Rating: ${rating} <br/> Likes: ${likes} Dislikes: ${dislikes} <br/> Genres: ${genres}</h3>
                 <p class='episode-desc'> ${descr}</p>
             </div> 
-            <button class="btn" id="thumbs-up"><i class="fa fa-thumbs-up fa-lg" aria-hidden="true"></i>
-                </button>
-            <button class="btn" id="thumbs-down"><i class="fa fa-thumbs-down fa-lg" aria-hidden="true"></i>
-            </button>
+           
         </div>`
         }
 
