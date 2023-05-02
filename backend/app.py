@@ -49,7 +49,7 @@ CORS(app)
 # genres is a tokenized list of selected genres
 # bounds is a double pair representing the bounds of the IMDB score range
 # filter is a string representing extra SQL queries
-def sql_search(input, genres, bounds, filter):
+def sql_search(input, genres, bounds, order):
     #print(input)
     #print(genres)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
@@ -66,16 +66,16 @@ def sql_search(input, genres, bounds, filter):
     genres_filter_query = genre_filter(genres_lst)
     print(genres_lst)
 
-
+    
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{input.lower()}%%' limit 10""")
     where_statement = genres_filter_query 
     print(where_statement)
     if len(where_statement) > 0:
-        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
+        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query} {order.lower()}"""
         #print(query_sql)
         # query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
     else:
-        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {order.lower()}"""
     keys = ["id","imdb_rating","title","description","images", "genres"]
     data = mysql_engine.query_selector(query_sql)
     dump = json.dumps([dict(zip(keys,i)) for i in data])
@@ -375,8 +375,9 @@ def episodes_search():
 @app.route("/episodes/sort")
 def episodes_sort():
     text = request.args.get("title")
+    genres = request.args.get("genres").split(",")
     sort_type = request.args.get("sort")
-    data = sql_search(text, "", "", "ORDER BY imdb_rating DESC")
+    data = sql_search(text, genres, "", "ORDER BY imdb_rating DESC")
     if(sort_type == 'asc'):
         data = sorted(data, key=lambda x: x['imdb_rating'], reverse=True)
     else:
