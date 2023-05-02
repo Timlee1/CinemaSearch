@@ -84,7 +84,10 @@
         }
 
         function answerBoxTemplate(rating, title, descr, genres, img_url, likes, dislikes) {
-            return `
+            if (rating === undefined||title === undefined||descr === undefined) {
+                return ``
+            } else {
+                return `
         <div class = 'box'>
             <div class = 'col'>
             <div class='image'>
@@ -104,6 +107,7 @@
             </div> 
            
         </div>`
+            }
         }
 
         function sendFocus() {
