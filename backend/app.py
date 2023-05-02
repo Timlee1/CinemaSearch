@@ -70,20 +70,27 @@ def sql_search(input, genres, bounds, filter):
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{input.lower()}%%' limit 10""")
     where_statement = genres_filter_query 
     print(where_statement)
-    if len(where_statement) > 0:
+    #if len(where_statement) > 0:
         #query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
         #print(query_sql)
-        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
-    else:
-        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
-    keys = ["id","imdb_rating","title","description","images", "genres"]
+    #    query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+    #else:
+    #    query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+
+    # needed to get all the text from the reviews
+    mysql_engine.query_executor("""SET SESSION group_concat_max_len = 1000000""")
+    query_sql = f"""SELECT M.id,imdb_rating,title,description,images,genres, GROUP_CONCAT(review SEPARATOR ' ') as reviews FROM movies M INNER JOIN  
+                    reviews R ON M.const = R.movie_id GROUP BY M.id, imdb_rating, title, description, images, genres {filter.lower()}"""
+    
+
+    keys = ["id","imdb_rating","title","description","images", "genres", "reviews"]
     data = mysql_engine.query_selector(query_sql)
     dump = json.dumps([dict(zip(keys,i)) for i in data])
 
     # List of Dictionary of the movies retrieved. 
     movies = json.loads(dump)
   
-    
+    #print(movies[0]["reviews"])
   
     svd_sim = SVD_sim(input, movies, False)
 
@@ -312,6 +319,45 @@ def edit_distance(input, title, del_cost, ins_cost, sub_cost):
     return chart[(len(input),len(title))]
 
 # build similary between query and movies using SVD
+def create_SVD_vectorizer(make_likes=False):
+
+    mysql_engine.query_executor("""SET SESSION group_concat_max_len = 1000000""")
+    query_sql = f"""SELECT M.id,title,description,genres, GROUP_CONCAT(review SEPARATOR ' ') as reviews FROM movies M INNER JOIN  
+                    reviews R ON M.const = R.movie_id GROUP BY M.id, title, description, genres"""
+    
+
+    keys = ["id","title","description", "genres", "reviews"]
+    data = mysql_engine.query_selector(query_sql)
+    dump = json.dumps([dict(zip(keys,i)) for i in data])
+
+    # List of Dictionary of the movies retrieved. 
+    movies = json.loads(dump)
+
+    if make_likes:
+        like_dict = dict()
+        for movie in movies:
+            like_dict[movie['title']] = (0,0) #(likes, dislikes)
+        
+        json.dump(like_dict, open("movie_likes.json", 'w'))
+
+    vectorizer = TfidfVectorizer(stop_words = 'english', max_df = .85,
+                        min_df = 0)
+    # vectorize descriptions
+    td_matrix = vectorizer.fit_transform([x["description"] + x["reviews"] for x in movies])
+    loc = open('vectorizer.pickle', 'wb')
+    pickle.dump(vectorizer, loc)
+    loc.close()
+    
+    #break down into matricies
+    print(td_matrix.shape)
+    dim = min(300,min(td_matrix.shape) -1)
+
+    docs_compressed, s, words_compressed = svds(td_matrix, k = dim)
+    words_compressed = words_compressed.T
+    words_compressed_normed = normalize(words_compressed, axis = 1)
+    docs_compressed_normed = normalize(docs_compressed)
+    np.save("words_compressed_normed", words_compressed_normed)
+    np.save("docs_compressed_normed", docs_compressed_normed)
 
 #if write, sets up vectorizer and zeros out likes
 def SVD_sim(query, movies, write=False):
@@ -360,6 +406,7 @@ def SVD_sim(query, movies, write=False):
     #map id's to sim
     for i in range(len(movies)):
         out[movies[i]["title"]] = sims[i]
+    print(out)
     return out
 
 
