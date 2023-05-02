@@ -64,16 +64,16 @@ def sql_search(input, genres, bounds, filter):
             key_terms.append(token)
     key_terms = set(key_terms) #only count each term once in query
     genres_filter_query = genre_filter(genres_lst)
-    #print(genres_filter_query)
+    print(genres_lst)
 
 
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{input.lower()}%%' limit 10""")
     where_statement = genres_filter_query 
     print(where_statement)
     if len(where_statement) > 0:
-        #query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
+        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
         #print(query_sql)
-        query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+        # query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
     else:
         query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
     keys = ["id","imdb_rating","title","description","images", "genres"]

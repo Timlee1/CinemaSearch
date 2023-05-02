@@ -171,6 +171,7 @@
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes/sort?" + new URLSearchParams({
                     title: document.getElementById("filter-text-val").value,
+                    genres: genres_selected,
                     sort: sort_type
                 }).toString())
                 .then((response) => response.json())
