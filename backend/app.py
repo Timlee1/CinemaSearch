@@ -425,7 +425,7 @@ def episodes_sort():
     text = request.args.get("title")
     genres = request.args.get("genres").split(",")
     sort_type = request.args.get("sort")
-    data = sql_search(text, genres, "", "ORDER BY imdb_rating DESC")
+    data = sql_search(text, genres, "", "")
     if(sort_type == 'asc'):
         data = sorted(data, key=lambda x: x['imdb_rating'], reverse=True)
     else:
