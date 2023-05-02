@@ -14,6 +14,10 @@
 
 }
 
+html {
+    background-color: black;
+}
+
 
 
 #google-c {
@@ -139,7 +143,7 @@ main {
 
 .genres {
     width: 200px;
-    height: 350px;
+    height: 280px;
 }
 
 label {
