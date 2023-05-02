@@ -14,50 +14,49 @@
                 <h1 id="google-c">Bottom of the Bin</h1>
                 <img class="logo" src="{{ url_for('static', filename='images/trash.png') }}" />
             </div>
-            <div class="input-box" onclick="sendFocus()">
-                <img src="{{ url_for('static', filename='images/mag.png') }}" />
-                <input placeholder="Input Genres or Key Terms!" id="filter-text-val" onkeyup="filterText()">
-            </div>
-            <div class="sort">
-                <p>Sort By:</p>
-                <button class="sort-button" onclick="sortResults('asc')">
-                    &#9650;
-                </button>
-                <button class="sort-button" onclick="sortResults('desc')">
-                    &#9660;
-                </button>
+            <div class='input-box-bar'>
+                <div class="input-box" onclick="sendFocus()">
+                    <img src="{{ url_for('static', filename='images/mag.png') }}" />
+                    <input placeholder="Input Genres or Key Terms!" id="filter-text-val" onkeyup="filterText()">
+                </div>
             </div>
 
-            <label for="genres">Genres:</label>
-            <select name="genres" id="genres" class="genres" multiple>
-                <option value="horror">Horror</option>
-                <option value="action">Action</option>
-                <option value="mystery">Mystery</option>
-                <option value="romance">Romance</option>
-                <option value="sci-fi">Sci-fi</option>
-                <option value="western">Western</option>
-                <option value="drama">Drama</option>
-                <option value="sci-fi">Sci-fi</option>
-                <option value="comedy">Comedy</option>
-                <option value="fantasy">Fantasy</option>
-                <option value="crime">Crime</option>
-                <option value="thriller">Thriller</option>
-                <option value="adventure">Adventure</option>
-                <option value="sport">Sport</option>
-                <option value="biography">Biography</option>
-                <option value="musical">Musical</option>
-                <option value="documentary">Documentary</option>
-            </select>
-
         </div>
-        <div id="answer-box">
+        <main>
+            <div id="sidebar">
+                <div class="sort">
+                    <label for="sort">Sort By Rating:</label>
+                    <button name="sort" class="sort-button" onclick="sortResults('asc')">
+                        &#9650;
+                    </button>
+                    <button name="sort" class="sort-button" onclick="sortResults('desc')">
+                        &#9660;
+                    </button>
+                </div>
+                <label for="genres">Genres:</label>
+                <select name="genres" id="genres" class="genres" multiple>
+                    <option value="horror">Horror</option>
+                    <option value="action">Action</option>
+                    <option value="mystery">Mystery</option>
+                    <option value="romance">Romance</option>
+                    <option value="sci-fi">Sci-fi</option>
+                    <option value="western">Western</option>
+                    <option value="drama">Drama</option>
+                    <option value="comedy">Comedy</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="crime">Crime</option>
+                    <option value="thriller">Thriller</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="sport">Sport</option>
+                </select>
+            </div>
+            <div id="answer-box">
 
-        </div>
+            </div>
+        </main>
     </div>
 
     <script>
-
-
         var genres_selected = new Array();
         genres.addEventListener("change", function () {
             var genres = document.getElementById("genres");
@@ -65,7 +64,9 @@
             filterText();
         });
 
-        function myFunction(x) { x.classList.toggle("fa-thumbs-down"); }
+        function myFunction(x) {
+            x.classList.toggle("fa-thumbs-down");
+        }
 
         function getSelectValues(select) {
             var result = [];
@@ -97,7 +98,8 @@
             </div>
             </div>
             <div class='info'>
-                <h3 class='episode-title'>${title} : Rating: ${rating} <br/> Likes: ${likes} Dislikes: ${dislikes} <br/> Genres: ${genres}</h3>
+                <h3 class='episode-title'>${title} </h3>
+                <p class='extra'>Rating: ${rating} <br/> Likes: ${likes} Dislikes: ${dislikes} <br/> Genres: ${genres}</p>
                 <p class='episode-desc'> ${descr}</p>
             </div> 
            
@@ -112,9 +114,9 @@
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes?" + new URLSearchParams({
-                title: document.getElementById("filter-text-val").value,
-                genres: genres_selected
-            }).toString())
+                    title: document.getElementById("filter-text-val").value,
+                    genres: genres_selected
+                }).toString())
                 .then((response) => response.json())
                 .then((data) =>
                     data.forEach(row => {
@@ -130,8 +132,7 @@
                             if (btn2.classList.contains('red')) {
                                 btn2.classList.remove('red');
                                 change = "relike"
-                            }
-                            else {
+                            } else {
                                 change = "like"
                             }
 
@@ -146,8 +147,7 @@
                             if (btn1.classList.contains('green')) {
                                 btn1.classList.remove('green');
                                 change = "unlike"
-                            }
-                            else {
+                            } else {
                                 change = "dislike"
                             }
                             this.classList.toggle('red');
@@ -166,15 +166,49 @@
             document.getElementById("answer-box").innerHTML = ""
             console.log(document.getElementById("filter-text-val").value)
             fetch("/episodes/sort?" + new URLSearchParams({
-                title: document.getElementById("filter-text-val").value,
-                sort: sort_type
-            }).toString())
+                    title: document.getElementById("filter-text-val").value,
+                    genres: genres_selected,
+                    sort: sort_type
+                }).toString())
                 .then((response) => response.json())
                 .then((data) => data.forEach(row => {
                     let tempDiv = document.createElement("div")
                     tempDiv.innerHTML = answerBoxTemplate(row.imdb_rating, row.title, row.description, row
-                        .genres, row.images)
-                    document.getElementById("div")
+                        .genres, row.images, row.likes, row.dislikes)
+                    var btn1 = tempDiv.querySelector('div.box button[id=thumbs-up]');
+                    var btn2 = tempDiv.querySelector('div.box button[id=thumbs-down]');
+
+                    btn1.addEventListener('click', function () {
+                        let change = 0
+                        if (btn2.classList.contains('red')) {
+                            btn2.classList.remove('red');
+                            change = "relike"
+                        } else {
+                            change = "like"
+                        }
+
+                        this.classList.toggle('green');
+                        fetch("/episodes/like?" + new URLSearchParams({
+                            title: row.title,
+                            change: change
+                        }).toString());
+                    });
+                    btn2.addEventListener('click', function () {
+
+                        if (btn1.classList.contains('green')) {
+                            btn1.classList.remove('green');
+                            change = "unlike"
+                        } else {
+                            change = "dislike"
+                        }
+                        this.classList.toggle('red');
+
+                        fetch("/episodes/like?" + new URLSearchParams({
+                            title: row.title,
+                            change: change
+                        }).toString());
+
+                    });
                     document.getElementById("answer-box").appendChild(tempDiv)
                 }));
         }

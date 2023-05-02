@@ -49,7 +49,7 @@ CORS(app)
 # genres is a tokenized list of selected genres
 # bounds is a double pair representing the bounds of the IMDB score range
 # filter is a string representing extra SQL queries
-def sql_search(input, genres, bounds, filter):
+def sql_search(input, genres, bounds, order):
     #print(input)
     #print(genres)
     genres_listing = ["horror","action","mystery","romance","sci-fi","western","drama","sci-fi","comedy","fantasy","crime","thriller","adventure","sport","biography","documentary"]
@@ -64,26 +64,25 @@ def sql_search(input, genres, bounds, filter):
             key_terms.append(token)
     key_terms = set(key_terms) #only count each term once in query
     genres_filter_query = genre_filter(genres_lst)
-    #print(genres_filter_query)
+    #print(genres_lst)
 
-
+    
     # query_sql = f"""SELECT imdb_rating,title,description,directors FROM movies WHERE LOWER( title ) LIKE '%%{input.lower()}%%' limit 10""")
     where_statement = genres_filter_query 
-    print(where_statement)
-    #if len(where_statement) > 0:
-        #query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies WHERE {genres_filter_query}"""
-        #print(query_sql)
-    #    query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
-    #else:
-    #    query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
-
-    # needed to get all the text from the reviews
+    #print(where_statement)
     mysql_engine.query_executor("""SET SESSION group_concat_max_len = 1000000""")
-    query_sql = f"""SELECT M.id,imdb_rating,title,description,images,genres, GROUP_CONCAT(review SEPARATOR ' ') as reviews FROM movies M INNER JOIN  
-                    reviews R ON M.const = R.movie_id GROUP BY M.id, imdb_rating, title, description, images, genres {filter.lower()}"""
     
-
+    if len(where_statement) > 0:
+        query_sql = f"""SELECT M.id,imdb_rating,title,description,images,genres, GROUP_CONCAT(review SEPARATOR ' ') as reviews FROM movies M INNER JOIN  
+                    reviews R ON M.const = R.movie_id WHERE {genres_filter_query} {order.lower()} GROUP BY M.id, imdb_rating, title, description, images, genres"""
+        #print(query_sql)
+        # query_sql = f"""SELECT id,imdb_rating,title,description,images,genres FROM movies {filter.lower()}"""
+    else:
+        query_sql = f"""SELECT M.id,imdb_rating,title,description,images,genres, GROUP_CONCAT(review SEPARATOR ' ') as reviews FROM movies M INNER JOIN  
+                    reviews R ON M.const = R.movie_id GROUP BY M.id, imdb_rating, title, description, images, genres {order.lower()}"""
     keys = ["id","imdb_rating","title","description","images", "genres", "reviews"]
+
+    #keys = ["id","imdb_rating","title","description","images", "genres"]
     data = mysql_engine.query_selector(query_sql)
     dump = json.dumps([dict(zip(keys,i)) for i in data])
 
@@ -228,7 +227,9 @@ def jac_sim(input,movies):
     out = list()
     for movie in movies:
         B = set(movie["genre_tokens"])
-        out.append((movie, len(A.intersection(B)) / (1 + len(A.union(B)))))
+        #out.append((movie, len(A.intersection(B)) / (1 + len(A.union(B)))))
+        top_score = len(A.intersection(B)) + 0.25 *  len(B - A)
+        out.append((movie, top_score / (1 + len(A.union(B)))))
     return out    
 
 # TODO Implement Jaccard Similarity
@@ -406,7 +407,7 @@ def SVD_sim(query, movies, write=False):
     #map id's to sim
     for i in range(len(movies)):
         out[movies[i]["title"]] = sims[i]
-    print(out)
+    #print(out)
     return out
 
 
@@ -422,8 +423,9 @@ def episodes_search():
 @app.route("/episodes/sort")
 def episodes_sort():
     text = request.args.get("title")
+    genres = request.args.get("genres").split(",")
     sort_type = request.args.get("sort")
-    data = sql_search(text, "", "", "ORDER BY imdb_rating DESC")
+    data = sql_search(text, genres, "", "ORDER BY imdb_rating DESC")
     if(sort_type == 'asc'):
         data = sorted(data, key=lambda x: x['imdb_rating'], reverse=True)
     else:

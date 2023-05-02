@@ -10,43 +10,33 @@
     justify-content: start;
     align-items: center;
     flex-direction: column;
+    background-color: black;
+
 }
+
+html {
+    background-color: black;
+}
+
+
 
 #google-c {
-    color: #4285F4;
-}
-
-#google-s {
-    color: #DB4437;
-}
-
-#google-4 {
-    color: #F4B400;
-}
-
-#google-3 {
-    color: #4285F4;
-}
-
-#google-0-1 {
-    color: #0F9D58;
-}
-
-#google-0-2 {
-    color: #DB4437;
+    color: #a3a3a3;
 }
 
 .google-colors {
     display: flex;
     align-items: center;
     font-size: 48px;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Chalkduster';
+
 }
 
 .logo {
     padding-top: 50px;
-    width: 100px;
+
     height: 200px;
+    width: auto;
 }
 
 .sort-button {
@@ -59,6 +49,8 @@
 .sort {
     display: flex;
     flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
 .google-colors h1 {
@@ -66,14 +58,25 @@
     margin-right: 3px;
 }
 
+.input-box-bar {
+    width: 100%;
+    background-color: gray;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 0px;
+}
+
 .input-box {
     border-radius: 50px;
     border: 1px solid black;
     display: flex;
     align-items: center;
-    margin-top: 10px;
+    margin: 10px;
     padding: 12px;
     width: 600px;
+    background-color: white;
 }
 
 .input-box img {
@@ -85,6 +88,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0px;
+    margin: 0px;
 }
 
 .input-box input {
@@ -93,16 +100,59 @@
     font-size: 16px;
     border: none;
     outline: 0;
+    background-color: white;
+}
+
+main {
+
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-image: url("images/bottom-of-bin.png");
+    background-repeat: repeat;
 }
 
 #answer-box {
-    width: 700px;
-    margin-top: 50px;
+    padding: 10px;
+    padding-left: 50px;
+    width: 70%;
+}
+
+#sidebar {
+    margin-top: 0px;
+    padding-top: 15px;
+    padding-bottom: 50px;
+    padding-left: 10px;
+    padding-right: 10px;
+    /* margin-left: 15px; */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 18%;
+    border-width: 2px;
+    border-color: black;
+    border-style: solid;
+    box-shadow: 0px 5px 5px rgb(98, 98, 98);
+    background-color: rgb(185, 185, 185);
+
 }
 
 .genres {
     width: 200px;
-    height: 80px;
+    height: 280px;
+}
+
+label {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+option {
+    font-size: 16px;
+    text-align: center;
 }
 
 .box {
@@ -110,10 +160,15 @@
     flex-direction: row;
     justify-content: center;
     padding: 10px 10px;
-    margin: 2px 2px;
-    border-radius: 2px;
+    margin: 20px 4px;
+    border-radius: 4px;
+    border-radius: 5px;
     border-color: black;
     border-style: solid;
+    box-shadow: 0px 5px 5px rgb(46, 46, 46);
+    background-color: rgb(214, 214, 214);
+    background-repeat: repeat;
+
 }
 
 .image {
@@ -133,22 +188,25 @@
 
 .trash {
     height: 200px;
-    width: auto;
 }
 
 .movie-img {
     height: 200px;
     width: 160px;
     object-fit: cover;
+    /* padding: 10px 10px; */
+    margin: 20px 4px;
+    border-width: 5px;
+    border-radius: 1px;
+    border-color: black;
+    border-style: solid;
 }
 
 .episode-title {
     font-family: 'Kanit', sans-serif;
 }
 
-.episode-desc {
-    font-family: 'Montserrat', sans-serif;
-}
+
 
 body {
     margin: 40px;
@@ -183,6 +241,31 @@ button {
 
 .info {
     width: 100%;
+}
+
+.info h3 {
+    font-size: 32px;
+    color: black;
+    font-family: 'Rockwell';
+    margin-bottom: 0px;
+
+}
+
+.info .extra {
+    margin-top: 0px;
+    font-size: 28px;
+    color: black;
+    font-family: 'Bradley Hand';
+    margin-bottom: 6px;
+
+}
+
+.info .episode-desc {
+    margin-top: 0px;
+    font-size: 20px;
+    color: black;
+    font-weight: bold;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .social {
